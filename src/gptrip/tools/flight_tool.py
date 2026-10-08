@@ -98,6 +98,35 @@ CITY_MAIN_AIRPORT = {
     "rome": "FCO",
     "madrid": "MAD",
     "frankfurt": "FRA",
+    "bali": "DPS",
+    "denpasar": "DPS",
+    "phuket": "HKT",
+    "maldives": "MLE",
+    "male": "MLE",
+    "colombo": "CMB",
+    "goa": "GOI",
+    "seoul": "ICN",
+    "hanoi": "HAN",
+    "ho chi minh": "SGN",
+    "amalfi": "NAP",
+    "amalfi coast": "NAP",
+    "positano": "NAP",
+    "ravello": "NAP",
+    "capri": "NAP",
+    "naples": "NAP",
+    "florence": "FLR",
+    "venice": "VCE",
+    "milan": "MXP",
+    "santorini": "JTR",
+    "mykonos": "JMK",
+    "athens": "ATH",
+    "zurich": "ZRH",
+    "geneva": "GVA",
+    "lucerne": "ZRH",
+    "cancun": "CUN",
+    "hawaii": "HNL",
+    "honolulu": "HNL",
+    "maui": "OGG",
 }
 
 def clean_text(text:str) -> str:
@@ -108,7 +137,9 @@ def clean_text(text:str) -> str:
     stop_words = [
         "flight", "flights", "ticket", "tickets", "trip", "travel",
         "plan", "complete", "days", "day", "including", "hotel",
-        "hotels", "sightseeing", "under", "budget", "info", "information"
+        "hotels", "sightseeing", "under", "budget", "info", "information",
+        "want", "go", "to", "visit", "head", "vacation", "holiday",
+        "get", "need", "like", "flying", "fly"
     ]
     words = [w for w in text.split() if w not in stop_words]
     return " ".join(words)
@@ -237,20 +268,23 @@ def resolve_location_to_iata(location: str):
         city = str(airport.get("city", "")).lower().strip()
         name = str(airport.get("name", "")).lower().strip()
 
+        matched = False
         score = 0
 
         if city == location_clean:
             score += 100
-        elif location_clean in city:
+            matched = True
+        elif location_clean in city or (len(city) > 3 and city in location_clean):
             score += 70
+            matched = True
 
         if location_clean in name:
             score += 50
+            matched = True
 
-        if "international" in name:
-            score += 10
-
-        if score > 0:
+        if matched:
+            if "international" in name:
+                score += 10
             city_matches.append((score, iata))
 
     if city_matches:
