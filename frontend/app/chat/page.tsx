@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense, useRef } from "react";
+import { useState, useEffect, Suspense, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
@@ -83,7 +83,7 @@ function cleanTimeString(isoStr?: string): string {
 }
 
 // Parses real AviationStack output dynamically
-function parseDynamicFlights(raw: string, query: string): ParsedFlight[] {
+function parseDynamicFlights(raw: string): ParsedFlight[] {
   if (!raw) return [];
 
   const flights: ParsedFlight[] = [];
@@ -245,66 +245,70 @@ function ConciergeChatContent() {
   );
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  const executeInquiry = useCallback(
+    async (queryText?: string) => {
+      const q = (queryText || prompt).trim();
+      if (!q || loading) return;
+
+      setLoading(true);
+      setHasConversationStarted(true);
+      setUserQuery(q);
+      setPrompt("");
+
+      try {
+        const response = await fetch("http://localhost:8000/api/travel", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: q,
+            thread_id: threadId || undefined,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          setData(result);
+          if (result.thread_id) {
+            setThreadId(result.thread_id);
+          }
+        } else {
+          alert(result.error || "Our concierge service is briefly unavailable.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert(
+          "Unable to reach the travel advisory service. Please verify that the backend is running on port 8000."
+        );
+      } finally {
+        setLoading(false);
+        setTimeout(() => {
+          bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 150);
+      }
+    },
+    [prompt, loading, threadId]
+  );
+
+  const initialPromptExecuted = useRef(false);
   // If user navigated with a prompt parameter from home page, execute it
   useEffect(() => {
-    if (initialPrompt) {
-      setHasConversationStarted(true);
-      setUserQuery(initialPrompt);
+    if (initialPrompt && !initialPromptExecuted.current) {
+      initialPromptExecuted.current = true;
       executeInquiry(initialPrompt);
     }
-  }, [initialPrompt]);
+  }, [initialPrompt, executeInquiry]);
 
-  const executeInquiry = async (queryText?: string) => {
-    const q = (queryText || prompt).trim();
-    if (!q || loading) return;
-
-    setLoading(true);
-    setHasConversationStarted(true);
-    setUserQuery(q);
-    setPrompt("");
-
-    try {
-      const response = await fetch("http://localhost:8000/api/travel", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: q,
-          thread_id: threadId || undefined,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        setData(result);
-        if (result.thread_id) {
-          setThreadId(result.thread_id);
-        }
-      } else {
-        alert(result.error || "Our concierge service is briefly unavailable.");
-      }
-    } catch (err) {
-      console.error(err);
-      alert(
-        "Unable to reach the travel advisory service. Please verify that the backend is running on port 8000."
-      );
-    } finally {
-      setLoading(false);
-      setTimeout(() => {
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 150);
-    }
-  };
-
-  const parsedFlights = data ? parseDynamicFlights(data.flight_results, userQuery) : [];
+  const parsedFlights = data ? parseDynamicFlights(data.flight_results) : [];
   const parsedHotels = data ? parseDynamicHotels(data.hotel_results) : [];
 
+
   return (
-    <div className="w-full max-w-4xl mx-auto px-6 sm:px-10 pt-28 sm:pt-32 pb-20">
+    <div className="w-full max-w-4xl mx-auto px-4 sm:px-8 lg:px-10 pt-24 sm:pt-32 pb-16 sm:pb-20 overflow-x-hidden">
       {/* Specialist Identity Header */}
-      <div className="flex items-center justify-between pb-8 mb-10 border-b border-[#D2CABC]/70">
-        <div className="flex items-center gap-4">
-          <div className="relative w-12 h-12 rounded-full overflow-hidden border border-[#C6A878] shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 sm:pb-8 mb-8 sm:mb-10 border-b border-[#D2CABC]/70">
+        <div className="flex items-center gap-3.5 sm:gap-4">
+          <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden border border-[#C6A878] shadow-sm shrink-0">
             <Image
               src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400&auto=format&fit=crop"
               alt="Sofia Laurent"
@@ -313,15 +317,15 @@ function ConciergeChatContent() {
             />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="font-serif text-xl font-medium text-[#11100F]">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="font-serif text-lg sm:text-xl font-medium text-[#11100F]">
                 Sofia Laurent
               </h2>
-              <span className="text-[10px] uppercase tracking-[0.25em] text-[#8A6D38] font-bold font-sans">
+              <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.25em] text-[#8A6D38] font-bold font-sans">
                 Travel Specialist
               </span>
             </div>
-            <p className="text-xs text-[#555047] leading-relaxed pt-0.5">
+            <p className="text-[11px] sm:text-xs text-[#555047] leading-relaxed pt-0.5">
               Dedicated Concierge &middot; Powered by live aviation &amp; boutique search
             </p>
           </div>
@@ -335,7 +339,7 @@ function ConciergeChatContent() {
               setUserQuery("");
               setHasConversationStarted(false);
             }}
-            className="text-xs uppercase tracking-[0.2em] text-[#6E685E] hover:text-[#11100F] transition-colors cursor-pointer font-sans font-semibold"
+            className="self-end sm:self-auto text-xs uppercase tracking-[0.2em] text-[#6E685E] hover:text-[#11100F] transition-colors cursor-pointer font-sans font-semibold py-1"
           >
             New Inquiry
           </button>
@@ -345,20 +349,20 @@ function ConciergeChatContent() {
       {/* ========================================================= */}
       {/* MAIN CONCIERGE CONVERSATION                               */}
       {/* ========================================================= */}
-      <main className="space-y-16 min-h-[65vh]">
+      <main className="space-y-12 sm:space-y-16 min-h-[65vh]">
         {/* STATE A: EMPTY STATE (Before conversation begins) */}
         {!hasConversationStarted && !data && (
-          <div className="py-10 sm:py-16 space-y-12 max-w-2xl mx-auto text-center">
-            <div className="space-y-4">
+          <div className="py-8 sm:py-16 space-y-8 sm:space-y-12 max-w-2xl mx-auto text-center">
+            <div className="space-y-3 sm:space-y-4">
               <span className="text-xs uppercase tracking-[0.35em] text-[#8A6D38] font-sans font-bold block">
                 Your Private Concierge
               </span>
 
-              <h1 className="font-serif text-4xl sm:text-6xl text-[#11100F] font-normal tracking-tight leading-[1.08]">
+              <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl text-[#11100F] font-normal tracking-tight leading-[1.08]">
                 Where will we take you?
               </h1>
 
-              <p className="text-base sm:text-lg text-[#3D3A35] font-normal leading-relaxed max-w-lg mx-auto">
+              <p className="text-sm sm:text-lg text-[#3D3A35] font-normal leading-relaxed max-w-lg mx-auto px-2">
                 Whether you&apos;re imagining a secluded island sanctuary,
                 a cultural capital journey, or something entirely your own,
                 begin with a thought.
@@ -366,20 +370,20 @@ function ConciergeChatContent() {
             </div>
 
             {/* Large Paper-like Text Input */}
-            <div className="space-y-6 pt-2">
+            <div className="space-y-5 sm:space-y-6 pt-2">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   executeInquiry();
                 }}
-                className="bg-[#FFFFFF] border border-[#C8C0B0] shadow-[0_12px_30px_-8px_rgba(20,20,19,0.08)] p-5 text-left space-y-4"
+                className="bg-[#FFFFFF] border border-[#C8C0B0] shadow-[0_12px_30px_-8px_rgba(20,20,19,0.08)] p-4 sm:p-5 text-left space-y-3 sm:space-y-4"
               >
                 <textarea
                   rows={3}
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="Tell us what your perfect journey looks like (destination, dates, pacing)..."
-                  className="w-full bg-transparent text-base sm:text-lg text-[#11100F] placeholder:text-[#656056] focus:outline-none font-serif leading-relaxed resize-none"
+                  className="w-full bg-transparent text-sm sm:text-base md:text-lg text-[#11100F] placeholder:text-[#656056] focus:outline-none font-serif leading-relaxed resize-none"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -389,15 +393,15 @@ function ConciergeChatContent() {
                 />
 
                 <div className="flex items-center justify-between pt-2 border-t border-[#D2CABC]/60">
-                  <div className="flex items-center gap-4 text-xs text-[#6A655C] font-sans">
+                  <div className="flex items-center gap-3 sm:gap-4 text-[11px] sm:text-xs text-[#6A655C] font-sans">
                     <button
                       type="button"
                       onClick={() =>
                         setPrompt("Plan an unhurried 5-day escape to Kyoto with ryokan stays and traditional gardens")
                       }
-                      className="hover:text-[#11100F] transition-colors flex items-center gap-1.5 cursor-pointer"
+                      className="hover:text-[#11100F] transition-colors flex items-center gap-1.5 cursor-pointer text-left"
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-[#B89658]" />
+                      <Sparkles className="w-3.5 h-3.5 text-[#B89658] shrink-0" />
                       <span>Inspiration example</span>
                     </button>
                   </div>
@@ -405,7 +409,7 @@ function ConciergeChatContent() {
                   <button
                     type="submit"
                     disabled={!prompt.trim()}
-                    className="w-10 h-10 bg-[#1F1E1C] hover:bg-[#0A0A09] text-white disabled:opacity-30 transition-all flex items-center justify-center rounded-[3px] cursor-pointer shadow-sm"
+                    className="w-9 h-9 sm:w-10 sm:h-10 bg-[#1F1E1C] hover:bg-[#0A0A09] text-white disabled:opacity-30 transition-all flex items-center justify-center rounded-[3px] cursor-pointer shadow-sm shrink-0"
                     title="Send message"
                   >
                     <ArrowUp className="w-4 h-4" />
@@ -414,27 +418,23 @@ function ConciergeChatContent() {
               </form>
 
               {/* Dynamic Inspiration Chips */}
-              <div className="pt-4 space-y-3">
-                <span className="text-[11px] uppercase tracking-[0.25em] text-[#8A6D38] font-bold block">
+              <div className="pt-3 sm:pt-4 space-y-2.5 sm:space-y-3">
+                <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.25em] text-[#8A6D38] font-bold block">
                   Inspirations
                 </span>
-                <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-[#3D3A35]">
-                  {INSPIRATION_PILLS.map((pill, idx) => (
-                    <span key={pill} className="inline-flex items-center gap-4">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPrompt(pill);
-                          executeInquiry(pill);
-                        }}
-                        className="hover:text-[#11100F] font-serif hover:underline underline-offset-4 cursor-pointer transition-colors"
-                      >
-                        {pill}
-                      </button>
-                      {idx < INSPIRATION_PILLS.length - 1 && (
-                        <span className="text-[#C8C0B0]">&bull;</span>
-                      )}
-                    </span>
+                <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+                  {INSPIRATION_PILLS.map((pill) => (
+                    <button
+                      key={pill}
+                      type="button"
+                      onClick={() => {
+                        setPrompt(pill);
+                        executeInquiry(pill);
+                      }}
+                      className="px-3 py-1.5 border border-[#D2CABC]/70 hover:border-[#11100F] hover:bg-white text-xs sm:text-sm font-serif text-[#3D3A35] hover:text-[#11100F] cursor-pointer transition-all rounded-sm text-left sm:text-center"
+                    >
+                      {pill}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -444,13 +444,13 @@ function ConciergeChatContent() {
 
         {/* STATE B: ACTIVE CONVERSATION (PURELY DYNAMIC) */}
         {(hasConversationStarted || data) && (
-          <div className="space-y-16">
+          <div className="space-y-12 sm:space-y-16">
             {/* Conversation Header */}
             <div className="space-y-1 pb-4 border-b border-[#D2CABC]/70">
               <span className="text-[10px] uppercase tracking-[0.3em] text-[#8A6D38] font-bold block font-sans">
                 Your Private Concierge
               </span>
-              <h1 className="font-serif text-3xl sm:text-4xl text-[#11100F] font-normal">
+              <h1 className="font-serif text-2xl sm:text-4xl text-[#11100F] font-normal">
                 Voyage Consultation
               </h1>
             </div>
@@ -458,10 +458,10 @@ function ConciergeChatContent() {
             {/* CLIENT INQUIRY BLOCK */}
             {userQuery && (
               <div className="space-y-2">
-                <div className="text-[11px] uppercase tracking-[0.25em] text-[#8A6D38] font-sans font-bold">
+                <div className="text-[10px] sm:text-[11px] uppercase tracking-[0.25em] text-[#8A6D38] font-sans font-bold">
                   YOUR INQUIRY
                 </div>
-                <div className="font-serif text-xl sm:text-2xl text-[#11100F] leading-relaxed italic bg-[#FAF8F4] border-l-2 border-[#11100F] pl-6 py-4">
+                <div className="font-serif text-lg sm:text-2xl text-[#11100F] leading-relaxed italic bg-[#FAF8F4] border-l-2 border-[#11100F] pl-4 sm:pl-6 py-3 sm:py-4">
                   &ldquo;{userQuery}&rdquo;
                 </div>
               </div>
@@ -469,12 +469,12 @@ function ConciergeChatContent() {
 
             {/* LOADING STATE */}
             {loading && (
-              <div className="py-20 text-center space-y-4">
+              <div className="py-16 sm:py-20 text-center space-y-4">
                 <div className="w-8 h-8 rounded-full border-2 border-[#8A6D38] border-t-transparent animate-spin mx-auto" />
-                <p className="font-serif text-2xl text-[#11100F]">
+                <p className="font-serif text-xl sm:text-2xl text-[#11100F]">
                   Sofia Laurent is composing your voyage...
                 </p>
-                <p className="text-xs text-[#6A655C] max-w-md mx-auto">
+                <p className="text-xs text-[#6A655C] max-w-md mx-auto px-4">
                   Cross-referencing live air corridors, vetting boutique hotel availability, and pacing your daily journey.
                 </p>
               </div>
@@ -485,9 +485,9 @@ function ConciergeChatContent() {
               <>
                 {/* 1. DYNAMIC AIR CORRIDORS (FLIGHTS UI) */}
                 {parsedFlights.length > 0 && (
-                  <div className="space-y-6 pt-2 border-t border-[#D2CABC]/70">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
+                  <div className="space-y-5 sm:space-y-6 pt-2 border-t border-[#D2CABC]/70">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2">
+                      <div className="space-y-0.5 sm:space-y-1">
                         <span className="text-[10px] uppercase tracking-[0.28em] text-[#8A6D38] font-sans font-bold block">
                           Air Transit Radar
                         </span>
@@ -495,7 +495,7 @@ function ConciergeChatContent() {
                           Curated Flight Corridors
                         </h3>
                       </div>
-                      <div className="hidden sm:flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-[#6E685E]">
+                      <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs uppercase tracking-[0.16em] sm:tracking-[0.18em] text-[#6E685E]">
                         <Plane className="w-3.5 h-3.5 text-[#8A6D38]" />
                         <span>AviationStack Intelligence</span>
                       </div>
@@ -505,58 +505,58 @@ function ConciergeChatContent() {
                       {parsedFlights.map((flight, idx) => (
                         <div
                           key={idx}
-                          className="border border-[#C8C0B0] bg-[#FFFFFF] p-5 sm:p-6 shadow-sm space-y-4 hover:border-[#11100F] transition-colors"
+                          className="border border-[#C8C0B0] bg-[#FFFFFF] p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-4 hover:border-[#11100F] transition-colors"
                         >
-                          <div className="flex items-center justify-between text-xs border-b border-[#D2CABC]/60 pb-3">
+                          <div className="flex items-center justify-between gap-2 text-xs border-b border-[#D2CABC]/60 pb-3">
                             <div className="flex items-center gap-2">
-                              <span className="text-[10px] uppercase tracking-[0.25em] text-[#8A6D38] font-bold font-sans">
+                              <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.25em] text-[#8A6D38] font-bold font-sans">
                                 Corridor
                               </span>
                               <span className="text-[#D2CABC]">&bull;</span>
-                              <span className="font-serif font-medium text-[#11100F] text-sm">
+                              <span className="font-serif font-medium text-[#11100F] text-xs sm:text-sm">
                                 {flight.airline} &middot; {flight.flightNumber}
                               </span>
                             </div>
-                            <span className="text-[10px] uppercase tracking-[0.18em] text-[#8A6D38] font-bold font-sans bg-[#FAF8F4] px-2.5 py-1 border border-[#D2CABC]">
+                            <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.18em] text-[#8A6D38] font-bold font-sans bg-[#FAF8F4] px-2 sm:px-2.5 py-0.5 sm:py-1 border border-[#D2CABC] shrink-0">
                               {flight.status}
                             </span>
                           </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center pt-1">
+                          <div className="grid grid-cols-3 sm:grid-cols-12 gap-2 sm:gap-4 items-center pt-1">
                             {/* Departure */}
-                            <div className="sm:col-span-4 space-y-0.5">
-                              <span className="font-serif text-2xl sm:text-3xl text-[#11100F] block font-normal">
+                            <div className="col-span-1 sm:col-span-4 space-y-0.5">
+                              <span className="font-serif text-xl sm:text-3xl text-[#11100F] block font-normal">
                                 {flight.depIata}
                               </span>
-                              <p className="text-xs text-[#555047] truncate">
+                              <p className="text-[11px] sm:text-xs text-[#555047] line-clamp-1 sm:truncate" title={flight.depAirport}>
                                 {flight.depAirport}
                               </p>
-                              <p className="text-xs uppercase tracking-[0.15em] text-[#8A6D38] font-semibold pt-1">
+                              <p className="text-[10px] sm:text-xs uppercase tracking-[0.12em] sm:tracking-[0.15em] text-[#8A6D38] font-semibold pt-0.5 sm:pt-1">
                                 {flight.depTime}
                               </p>
                             </div>
 
                             {/* Middle Arrow */}
-                            <div className="sm:col-span-4 flex flex-col items-center justify-center text-center py-2">
-                              <div className="w-full flex items-center justify-center gap-3">
+                            <div className="col-span-1 sm:col-span-4 flex flex-col items-center justify-center text-center py-1 sm:py-2">
+                              <div className="w-full flex items-center justify-center gap-1.5 sm:gap-3">
                                 <div className="h-px bg-[#D2CABC] flex-1" />
-                                <Plane className="w-4 h-4 text-[#8A6D38]" />
+                                <Plane className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#8A6D38] shrink-0" />
                                 <div className="h-px bg-[#D2CABC] flex-1" />
                               </div>
-                              <span className="text-[10px] uppercase tracking-[0.2em] text-[#7A7468] pt-1">
+                              <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#7A7468] pt-1 whitespace-nowrap">
                                 Direct Transit
                               </span>
                             </div>
 
                             {/* Arrival */}
-                            <div className="sm:col-span-4 sm:text-right space-y-0.5">
-                              <span className="font-serif text-2xl sm:text-3xl text-[#11100F] block font-normal">
+                            <div className="col-span-1 sm:col-span-4 text-right space-y-0.5">
+                              <span className="font-serif text-xl sm:text-3xl text-[#11100F] block font-normal">
                                 {flight.arrIata}
                               </span>
-                              <p className="text-xs text-[#555047] truncate">
+                              <p className="text-[11px] sm:text-xs text-[#555047] line-clamp-1 sm:truncate" title={flight.arrAirport}>
                                 {flight.arrAirport}
                               </p>
-                              <p className="text-xs uppercase tracking-[0.15em] text-[#8A6D38] font-semibold pt-1">
+                              <p className="text-[10px] sm:text-xs uppercase tracking-[0.12em] sm:tracking-[0.15em] text-[#8A6D38] font-semibold pt-0.5 sm:pt-1">
                                 {flight.arrTime}
                               </p>
                             </div>
@@ -569,9 +569,9 @@ function ConciergeChatContent() {
 
                 {/* 2. DYNAMIC CURATED STAYS (HOTELS UI) */}
                 {parsedHotels.length > 0 && (
-                  <div className="space-y-6 pt-6 border-t border-[#D2CABC]/70">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
+                  <div className="space-y-5 sm:space-y-6 pt-6 border-t border-[#D2CABC]/70">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2">
+                      <div className="space-y-0.5 sm:space-y-1">
                         <span className="text-[10px] uppercase tracking-[0.28em] text-[#8A6D38] font-sans font-bold block">
                           Lodging Portfolio
                         </span>
@@ -579,7 +579,7 @@ function ConciergeChatContent() {
                           Curated Stays &amp; Sanctuaries
                         </h3>
                       </div>
-                      <div className="hidden sm:flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-[#6E685E]">
+                      <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs uppercase tracking-[0.16em] sm:tracking-[0.18em] text-[#6E685E]">
                         <Building className="w-3.5 h-3.5 text-[#8A6D38]" />
                         <span>Tavily Verified Stays</span>
                       </div>
@@ -589,31 +589,32 @@ function ConciergeChatContent() {
                       {parsedHotels.map((hotel, idx) => (
                         <div
                           key={idx}
-                          className="border border-[#C8C0B0] bg-[#FFFFFF] p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-5 hover:border-[#11100F] transition-colors group cursor-pointer"
+                          className="border border-[#C8C0B0] bg-[#FFFFFF] p-3.5 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 hover:border-[#11100F] transition-colors group cursor-pointer"
                           onClick={() =>
                             executeInquiry(`Tell me more about staying at ${hotel.name}`)
                           }
                         >
-                          <div className="relative w-full sm:w-36 h-28 sm:h-24 shrink-0 overflow-hidden border border-[#D2CABC]">
+                          <div className="relative w-full sm:w-40 h-40 sm:h-28 shrink-0 overflow-hidden border border-[#D2CABC]">
                             <Image
                               src={hotel.image}
                               alt={hotel.name}
                               fill
+                              sizes="(max-width: 640px) 100vw, 160px"
                               className="object-cover group-hover:scale-105 transition-transform duration-700"
                             />
                           </div>
 
-                          <div className="flex-1 space-y-1">
-                            <div className="flex items-center justify-between gap-2">
-                              <h4 className="font-serif text-xl sm:text-2xl text-[#11100F] group-hover:text-[#8A6D38] transition-colors">
+                          <div className="flex-1 space-y-1 w-full">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
+                              <h4 className="font-serif text-lg sm:text-2xl text-[#11100F] group-hover:text-[#8A6D38] transition-colors">
                                 {hotel.name}
                               </h4>
-                              <span className="text-xs uppercase tracking-[0.15em] text-[#11100F] font-bold font-sans">
+                              <span className="text-xs uppercase tracking-[0.15em] text-[#11100F] font-bold font-sans shrink-0">
                                 {hotel.rate}
                               </span>
                             </div>
 
-                            <p className="text-xs uppercase tracking-[0.18em] text-[#8A6D38] font-medium font-sans">
+                            <p className="text-[11px] sm:text-xs uppercase tracking-[0.18em] text-[#8A6D38] font-medium font-sans">
                               {hotel.location}
                             </p>
 
@@ -628,12 +629,12 @@ function ConciergeChatContent() {
                 )}
 
                 {/* 3. DYNAMIC DAY-BY-DAY ITINERARY JOURNAL (MARKDOWN) */}
-                <div className="space-y-8 pt-6 border-t border-[#D2CABC]/70">
+                <div className="space-y-6 sm:space-y-8 pt-6 border-t border-[#D2CABC]/70">
                   <div className="space-y-1">
                     <span className="text-[10px] uppercase tracking-[0.28em] text-[#8A6D38] font-sans font-bold block">
                       Tailored Proposal
                     </span>
-                    <h3 className="font-serif text-3xl text-[#11100F] font-normal">
+                    <h3 className="font-serif text-2xl sm:text-3xl text-[#11100F] font-normal">
                       Your Bespoke Day-by-Day Itinerary
                     </h3>
                   </div>
@@ -649,52 +650,52 @@ function ConciergeChatContent() {
 
             {/* SUGGESTED PROMPTS */}
             <div className="space-y-4 pt-6 border-t border-[#D2CABC]/70">
-              <span className="text-[11px] uppercase tracking-[0.25em] text-[#8A6D38] font-sans font-bold block">
+              <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.25em] text-[#8A6D38] font-sans font-bold block">
                 Perhaps you&apos;d like to ask...
               </span>
 
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {SUGGESTED_PROMPTS.map((suggestion) => (
                   <button
                     key={suggestion}
                     type="button"
                     onClick={() => executeInquiry(suggestion)}
-                    className="group flex items-center justify-between w-full py-2.5 border-b border-[#D2CABC]/40 hover:border-[#11100F] text-left transition-colors cursor-pointer"
+                    className="group flex items-center justify-between gap-3 w-full py-2.5 border-b border-[#D2CABC]/40 hover:border-[#11100F] text-left transition-colors cursor-pointer"
                   >
-                    <span className="text-base font-serif text-[#11100F] group-hover:text-[#8A6D38] transition-colors">
+                    <span className="text-sm sm:text-base font-serif text-[#11100F] group-hover:text-[#8A6D38] transition-colors">
                       {suggestion}
                     </span>
-                    <ArrowRight className="w-3.5 h-3.5 text-[#11100F] opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                    <ArrowRight className="w-3.5 h-3.5 text-[#11100F] opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all shrink-0" />
                   </button>
                 ))}
               </div>
             </div>
 
             {/* COMPOSER: Premium Paper-like Input Area */}
-            <div className="pt-6 sticky bottom-6 bg-[#F7F4EE]/95 backdrop-blur-md pb-2 z-20">
+            <div className="pt-4 sm:pt-6 sticky bottom-2 sm:bottom-6 bg-[#F7F4EE]/95 backdrop-blur-md pb-2 z-20">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   executeInquiry();
                 }}
-                className="bg-[#FFFFFF] border border-[#C8C0B0] shadow-[0_12px_32px_-8px_rgba(20,20,19,0.1)] p-4 sm:p-5 space-y-3"
+                className="bg-[#FFFFFF] border border-[#C8C0B0] shadow-[0_12px_32px_-8px_rgba(20,20,19,0.1)] p-3 sm:p-5 space-y-2.5 sm:space-y-3"
               >
                 <input
                   type="text"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="Ask Sofia to refine pace, add private guides, or reserve dining..."
-                  className="w-full bg-transparent text-base sm:text-lg text-[#11100F] placeholder:text-[#656056] focus:outline-none font-serif font-medium"
+                  className="w-full bg-transparent text-sm sm:text-base md:text-lg text-[#11100F] placeholder:text-[#656056] focus:outline-none font-serif font-medium px-1"
                 />
 
-                <div className="flex items-center justify-between pt-2 border-t border-[#D2CABC]/60 text-xs text-[#555047] font-sans">
-                  <div className="flex items-center gap-5">
+                <div className="flex items-center justify-between pt-2 border-t border-[#D2CABC]/60 text-xs text-[#555047] font-sans gap-2">
+                  <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto no-scrollbar py-0.5">
                     <button
                       type="button"
                       onClick={() =>
                         setPrompt("Recommend private Michelin reservations and scenic terraces")
                       }
-                      className="hover:text-[#11100F] transition-colors flex items-center gap-1.5 cursor-pointer"
+                      className="hover:text-[#11100F] transition-colors flex items-center gap-1 cursor-pointer whitespace-nowrap text-[11px] sm:text-xs px-2 py-1 rounded bg-[#FAF8F4] border border-[#D2CABC]/40 sm:border-transparent sm:bg-transparent sm:p-0"
                     >
                       <span>＋ Add dining</span>
                     </button>
@@ -703,7 +704,7 @@ function ConciergeChatContent() {
                       onClick={() =>
                         setPrompt("Make the itinerary more unhurried with slower mornings")
                       }
-                      className="hover:text-[#11100F] transition-colors flex items-center gap-1.5 cursor-pointer"
+                      className="hover:text-[#11100F] transition-colors flex items-center gap-1 cursor-pointer whitespace-nowrap text-[11px] sm:text-xs px-2 py-1 rounded bg-[#FAF8F4] border border-[#D2CABC]/40 sm:border-transparent sm:bg-transparent sm:p-0"
                     >
                       <Search className="w-3 h-3 text-[#B89658]" />
                       <span>Adjust pace</span>
@@ -713,7 +714,7 @@ function ConciergeChatContent() {
                   <button
                     type="submit"
                     disabled={!prompt.trim() || loading}
-                    className="w-9 h-9 bg-[#1F1E1C] hover:bg-[#0A0A09] text-white disabled:opacity-30 transition-all flex items-center justify-center rounded-[3px] cursor-pointer shadow-sm"
+                    className="w-8 h-8 sm:w-9 sm:h-9 bg-[#1F1E1C] hover:bg-[#0A0A09] text-white disabled:opacity-30 transition-all flex items-center justify-center rounded-[3px] cursor-pointer shadow-sm shrink-0 ml-1"
                     title="Send inquiry"
                   >
                     <ArrowUp className="w-4 h-4" />
@@ -732,7 +733,7 @@ function ConciergeChatContent() {
 
 export default function ChatConciergePage() {
   return (
-    <div className="min-h-screen bg-[#F7F4EE] text-[#11100F] flex flex-col selection:bg-[#E9E1D4] selection:text-[#11100F]">
+    <div className="min-h-screen bg-[#F7F4EE] text-[#11100F] flex flex-col selection:bg-[#E9E1D4] selection:text-[#11100F] overflow-x-hidden">
       <LuxuryHeader />
 
       <Suspense
@@ -745,8 +746,8 @@ export default function ChatConciergePage() {
         <ConciergeChatContent />
       </Suspense>
 
-      <footer className="border-t border-[#D2CABC]/80 py-10 px-6 sm:px-12 text-xs text-[#6A655C] bg-[#FAF8F4]">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <footer className="border-t border-[#D2CABC]/80 py-8 sm:py-10 px-4 sm:px-8 lg:px-12 text-xs text-[#6A655C] bg-[#FAF8F4]">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-center sm:text-left">
           <span className="font-serif tracking-[0.3em] uppercase text-sm text-[#11100F] font-medium">
             É T A P E
           </span>

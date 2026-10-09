@@ -90,19 +90,36 @@ body {
   background-color: rgba(36, 35, 33, 0.03);
 }
 
-/* Markdown typography curated like a luxury travel book */
+/* Utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Fluid responsive article typography */
+article {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
 article table {
   width: 100%;
   border-collapse: collapse;
-  margin: 2rem 0;
-  font-size: 0.875rem;
+  margin: 1.25rem 0;
+  font-size: 0.8125rem;
   overflow-x: auto;
   display: block;
+  -webkit-overflow-scrolling: touch;
 }
 
 @media (min-width: 640px) {
   article table {
     display: table;
+    font-size: 0.875rem;
+    margin: 2rem 0;
   }
 }
 
@@ -111,17 +128,29 @@ article th {
   color: var(--foreground);
   font-weight: 500;
   letter-spacing: 0.05em;
-  padding: 1rem 1.25rem;
+  padding: 0.75rem 0.875rem;
   text-align: left;
   border-bottom: 1px solid var(--border-medium);
   font-family: var(--font-serif), serif;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
+  white-space: nowrap;
 }
 
 article td {
-  padding: 1rem 1.25rem;
+  padding: 0.75rem 0.875rem;
   border-bottom: 1px solid var(--border-light);
   color: #383633;
+}
+
+@media (min-width: 640px) {
+  article th {
+    padding: 1rem 1.25rem;
+    font-size: 1.05rem;
+    white-space: normal;
+  }
+  article td {
+    padding: 1rem 1.25rem;
+  }
 }
 
 article tr:last-child td {
@@ -137,61 +166,127 @@ article h2,
 article h3,
 article h4 {
   color: var(--espresso);
-  margin-top: 2.25rem;
-  margin-bottom: 0.75rem;
+  margin-top: 1.75rem;
+  margin-bottom: 0.6rem;
   font-family: var(--font-serif), serif;
   font-weight: 400;
+  line-height: 1.25;
+}
+
+@media (min-width: 640px) {
+  article h1,
+  article h2,
+  article h3,
+  article h4 {
+    margin-top: 2.25rem;
+    margin-bottom: 0.75rem;
+  }
 }
 
 article h1 {
-  font-size: 2.25rem;
+  font-size: 1.75rem;
   letter-spacing: -0.02em;
 }
 
+@media (min-width: 640px) {
+  article h1 {
+    font-size: 2.25rem;
+  }
+}
+
 article h2 {
-  font-size: 1.75rem;
+  font-size: 1.35rem;
   border-bottom: 1px solid var(--border-light);
-  padding-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
   color: var(--foreground);
   letter-spacing: -0.01em;
 }
 
+@media (min-width: 640px) {
+  article h2 {
+    font-size: 1.75rem;
+    padding-bottom: 0.75rem;
+  }
+}
+
 article h3 {
-  font-size: 1.35rem;
+  font-size: 1.15rem;
   color: #524F4A;
+}
+
+@media (min-width: 640px) {
+  article h3 {
+    font-size: 1.35rem;
+  }
 }
 
 article p {
   color: #3D3A36;
-  line-height: 1.85;
-  margin: 1.1rem 0;
-  font-size: 0.95rem;
+  line-height: 1.8;
+  margin: 0.9rem 0;
+  font-size: 0.9rem;
+}
+
+@media (min-width: 640px) {
+  article p {
+    line-height: 1.85;
+    margin: 1.1rem 0;
+    font-size: 0.95rem;
+  }
 }
 
 article ul,
 article ol {
-  padding-left: 1.75rem;
-  margin: 1.1rem 0;
+  padding-left: 1.25rem;
+  margin: 0.9rem 0;
   color: #3D3A36;
+}
+
+@media (min-width: 640px) {
+  article ul,
+  article ol {
+    padding-left: 1.75rem;
+    margin: 1.1rem 0;
+  }
 }
 
 article li {
   margin-bottom: 0.5rem;
-  line-height: 1.75;
+  line-height: 1.7;
+}
+
+@media (min-width: 640px) {
+  article li {
+    line-height: 1.75;
+  }
 }
 
 article blockquote {
   border-left: 2px solid var(--gold-accent);
   background: rgba(233, 225, 212, 0.25);
-  padding: 1rem 1.75rem;
-  margin: 1.75rem 0;
+  padding: 0.85rem 1.25rem;
+  margin: 1.25rem 0;
   color: var(--foreground);
   font-style: italic;
   font-family: var(--font-serif), serif;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
+}
+
+@media (min-width: 640px) {
+  article blockquote {
+    padding: 1rem 1.75rem;
+    margin: 1.75rem 0;
+    font-size: 1.15rem;
+  }
 }
 
 article hr {
   border-color: var(--border-light);
-  margin: 2.5rem 0;
+  margin: 1.75rem 0;
+}
+
+@media (min-width: 640px) {
+  article hr {
+    margin: 2.5rem 0;
+  }
 }

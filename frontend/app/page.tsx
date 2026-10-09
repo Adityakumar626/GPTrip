@@ -6,15 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, useScroll, useTransform } from "framer-motion";
 import LuxuryHeader from "./navbar";
-import {
-  ArrowRight,
-  Compass,
-  Calendar,
-  Users,
-  Sparkles,
-  MapPin,
-  ChevronDown,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 const DESTINATIONS = [
   {
@@ -155,14 +147,14 @@ export default function QuietLuxuryHomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] flex flex-col selection:bg-[var(--surface-warm)] selection:text-[var(--espresso)] transition-colors duration-400">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] flex flex-col selection:bg-[var(--surface-warm)] selection:text-[var(--espresso)] transition-colors duration-400 overflow-x-hidden">
       {/* Luxury Minimal Header */}
       <LuxuryHeader />
 
       {/* 1. HERO SECTION WITH CINEMATIC PARALLAX */}
       <section
         ref={heroRef}
-        className="relative h-[92vh] min-h-[640px] w-full flex items-center justify-center overflow-hidden"
+        className="relative h-[88vh] sm:h-[92vh] min-h-[540px] sm:min-h-[640px] w-full flex items-center justify-center overflow-hidden"
       >
         {/* Parallax Background Cinematic Video */}
         <motion.div
@@ -187,37 +179,37 @@ export default function QuietLuxuryHomePage() {
             />
           </video>
           {/* Subtle dark cinematic film overlay */}
-          <div className="absolute inset-0 bg-black/40 backdrop-brightness-[0.88]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
+          <div className="absolute inset-0 bg-black/45 backdrop-brightness-[0.88]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
         </motion.div>
 
         {/* Hero Editorial Content */}
         <motion.div
           style={{ y: heroTextY, opacity: heroOpacity }}
-          className="relative z-10 max-w-4xl mx-auto px-6 text-center text-white space-y-6 pt-12"
+          className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center text-white space-y-4 sm:space-y-6 pt-10 sm:pt-12"
         >
-          <span className="text-[11px] uppercase tracking-[0.35em] text-white/80 font-sans block">
+          <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.25em] sm:tracking-[0.35em] text-white/80 font-sans block">
             Bespoke Private Journeys
           </span>
 
-          <h1 className="font-serif text-5xl sm:text-7xl md:text-8xl font-normal tracking-tight text-white leading-[1.05]">
+          <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-normal tracking-tight text-white leading-[1.08]">
             Travel beautifully.
           </h1>
 
-          <p className="text-sm sm:text-base font-light text-white/85 max-w-xl mx-auto leading-relaxed tracking-wide font-sans">
+          <p className="text-xs sm:text-base font-light text-white/85 max-w-xl mx-auto leading-relaxed tracking-wide font-sans px-2">
             Exceptional journeys, thoughtfully designed around you.
           </p>
 
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4 text-xs tracking-[0.18em] uppercase font-sans">
+          <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 text-xs tracking-[0.16em] sm:tracking-[0.18em] uppercase font-sans w-full max-w-md mx-auto sm:max-w-none">
             <Link
               href="/chat"
-              className="px-8 py-3.5 bg-[#F7F4EE] text-[#151412] hover:bg-white transition-all duration-300 w-full sm:w-auto font-medium"
+              className="px-7 sm:px-8 py-3 sm:py-3.5 bg-[#F7F4EE] text-[#151412] hover:bg-white transition-all duration-300 w-full sm:w-auto font-medium text-center"
             >
               Begin your journey
             </Link>
             <a
               href="#destinations"
-              className="px-8 py-3.5 text-white border border-white/30 hover:border-white hover:bg-white/10 transition-all duration-300 w-full sm:w-auto font-medium"
+              className="px-7 sm:px-8 py-3 sm:py-3.5 text-white border border-white/30 hover:border-white hover:bg-white/10 transition-all duration-300 w-full sm:w-auto font-medium text-center"
             >
               Explore destinations
             </a>
@@ -226,14 +218,14 @@ export default function QuietLuxuryHomePage() {
       </section>
 
       {/* 2. REFINED CONCIERGE INQUIRY PANEL */}
-      <section className="relative z-20 -mt-10 sm:-mt-14 max-w-5xl mx-auto px-6 w-full">
+      <section className="relative z-20 -mt-8 sm:-mt-12 md:-mt-14 max-w-5xl mx-auto px-4 sm:px-6 w-full">
         <form
           onSubmit={handleInquirySubmit}
-          className="bg-[#FAF8F4] border border-[rgba(36,35,33,0.1)] shadow-[0_25px_50px_-12px_rgba(20,20,19,0.08)] p-6 sm:p-8"
+          className="bg-[#FAF8F4] border border-[rgba(36,35,33,0.1)] shadow-[0_20px_45px_-10px_rgba(20,20,19,0.08)] p-5 sm:p-7 lg:p-8"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 divide-y lg:divide-y-0 lg:divide-x divide-[rgba(36,35,33,0.08)]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {/* Field 1 */}
-            <div className="space-y-1.5 lg:pr-6">
+            <div className="space-y-1.5 pb-4 sm:pb-0 sm:pr-4 lg:pr-6 border-b sm:border-b-0 sm:border-r border-[rgba(36,35,33,0.08)]">
               <label className="text-[10px] uppercase tracking-[0.2em] text-[#8C877D] font-sans font-medium block">
                 Destination
               </label>
@@ -247,7 +239,7 @@ export default function QuietLuxuryHomePage() {
             </div>
 
             {/* Field 2 */}
-            <div className="space-y-1.5 pt-4 lg:pt-0 lg:px-6">
+            <div className="space-y-1.5 pb-4 sm:pb-0 sm:pl-4 lg:px-6 border-b sm:border-b-0 lg:border-r border-[rgba(36,35,33,0.08)]">
               <label className="text-[10px] uppercase tracking-[0.2em] text-[#8C877D] font-sans font-medium block">
                 When
               </label>
@@ -265,7 +257,7 @@ export default function QuietLuxuryHomePage() {
             </div>
 
             {/* Field 3 */}
-            <div className="space-y-1.5 pt-4 lg:pt-0 lg:px-6">
+            <div className="space-y-1.5 pb-4 sm:pb-0 sm:pr-4 lg:px-6 border-b sm:border-b-0 sm:border-r border-[rgba(36,35,33,0.08)]">
               <label className="text-[10px] uppercase tracking-[0.2em] text-[#8C877D] font-sans font-medium block">
                 Travelers
               </label>
@@ -282,7 +274,7 @@ export default function QuietLuxuryHomePage() {
             </div>
 
             {/* Field 4 */}
-            <div className="space-y-1.5 pt-4 lg:pt-0 lg:pl-6">
+            <div className="space-y-1.5 pt-1 sm:pt-0 sm:pl-4 lg:pl-6">
               <label className="text-[10px] uppercase tracking-[0.2em] text-[#8C877D] font-sans font-medium block">
                 Journey Style
               </label>
@@ -300,14 +292,14 @@ export default function QuietLuxuryHomePage() {
             </div>
           </div>
 
-          <div className="mt-6 pt-6 border-t border-[rgba(36,35,33,0.08)] flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="mt-6 pt-5 sm:pt-6 border-t border-[rgba(36,35,33,0.08)] flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
             <span className="text-xs text-[#8C877D] font-light">
               Tailored itineraries synthesized with live airline radars & boutique stays
             </span>
 
             <button
               type="submit"
-              className="btn-primary px-8 py-3 text-xs uppercase tracking-[0.18em] font-sans w-full sm:w-auto"
+              className="btn-primary px-8 py-3 text-xs uppercase tracking-[0.18em] font-sans w-full sm:w-auto shrink-0"
             >
               Plan my journey
             </button>
@@ -316,15 +308,15 @@ export default function QuietLuxuryHomePage() {
       </section>
 
       {/* 3. CURATED DESTINATIONS (ASYMMETRICAL EDITORIAL LAYOUT) */}
-      <section id="destinations" className="py-28 px-6 sm:px-12 max-w-7xl mx-auto w-full space-y-16">
+      <section id="destinations" className="py-16 sm:py-24 lg:py-28 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full space-y-12 sm:space-y-16">
         <div className="space-y-3 max-w-xl">
-          <span className="text-[11px] uppercase tracking-[0.3em] text-[#8C877D] font-sans block">
+          <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-[#8C877D] font-sans block">
             Portfolio of Escapes
           </span>
-          <h2 className="font-serif text-3xl sm:text-5xl text-[#151412] font-normal tracking-tight">
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[#151412] font-normal tracking-tight">
             Curated Destinations
           </h2>
-          <p className="text-sm text-[#8C877D] font-light leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#8C877D] font-light leading-relaxed">
             Quiet havens and cultural capitals chosen for their character, seclusion, and uncompromising standards of hospitality.
           </p>
         </div>
@@ -335,20 +327,21 @@ export default function QuietLuxuryHomePage() {
           <div className="lg:col-span-7 space-y-4 group">
             <Link
               href={`/chat?prompt=${encodeURIComponent(DESTINATIONS[0].prompt)}`}
-              className="block editorial-image-container relative h-[440px] sm:h-[580px] w-full"
+              className="block editorial-image-container relative h-[320px] sm:h-[440px] lg:h-[580px] w-full"
             >
               <Image
                 src={DESTINATIONS[0].image}
                 alt={DESTINATIONS[0].name}
                 fill
+                sizes="(max-width: 1024px) 100vw, 60vw"
                 className="object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-80" />
-              <div className="absolute bottom-8 left-8 right-8 text-white space-y-1">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
+              <div className="absolute bottom-5 sm:bottom-8 left-5 sm:left-8 right-5 sm:right-8 text-white space-y-1">
                 <span className="text-[10px] uppercase tracking-[0.25em] text-white/80 block">
                   {DESTINATIONS[0].region}
                 </span>
-                <h3 className="font-serif text-3xl sm:text-4xl font-normal">
+                <h3 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-normal">
                   {DESTINATIONS[0].name}
                 </h3>
               </div>
@@ -359,25 +352,26 @@ export default function QuietLuxuryHomePage() {
           </div>
 
           {/* Secondary Stack */}
-          <div className="lg:col-span-5 space-y-12">
+          <div className="lg:col-span-5 space-y-8 sm:space-y-12">
             {DESTINATIONS.slice(1, 3).map((item) => (
               <div key={item.name} className="space-y-3 group">
                 <Link
                   href={`/chat?prompt=${encodeURIComponent(item.prompt)}`}
-                  className="block editorial-image-container relative h-[280px] sm:h-[320px] w-full"
+                  className="block editorial-image-container relative h-[220px] sm:h-[280px] lg:h-[320px] w-full"
                 >
                   <Image
                     src={item.image}
                     alt={item.name}
                     fill
+                    sizes="(max-width: 1024px) 100vw, 40vw"
                     className="object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-70" />
-                  <div className="absolute bottom-6 left-6 text-white space-y-0.5">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-75" />
+                  <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 text-white space-y-0.5">
                     <span className="text-[10px] uppercase tracking-[0.25em] text-white/80 block">
                       {item.region}
                     </span>
-                    <h3 className="font-serif text-2xl font-normal">
+                    <h3 className="font-serif text-xl sm:text-2xl font-normal">
                       {item.name}
                     </h3>
                   </div>
@@ -391,25 +385,26 @@ export default function QuietLuxuryHomePage() {
         </div>
 
         {/* Bottom Three Smaller Horizontal Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-6 border-t border-[rgba(36,35,33,0.08)]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 pt-6 border-t border-[rgba(36,35,33,0.08)]">
           {DESTINATIONS.slice(3, 6).map((item) => (
             <div key={item.name} className="space-y-3 group">
               <Link
                 href={`/chat?prompt=${encodeURIComponent(item.prompt)}`}
-                className="block editorial-image-container relative h-[260px] w-full"
+                className="block editorial-image-container relative h-[220px] sm:h-[260px] w-full"
               >
                 <Image
                   src={item.image}
                   alt={item.name}
                   fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
-                <div className="absolute bottom-5 left-5 text-white space-y-0.5">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
+                <div className="absolute bottom-4 sm:bottom-5 left-4 sm:left-5 text-white space-y-0.5">
                   <span className="text-[10px] uppercase tracking-[0.2em] text-white/80 block">
                     {item.region}
                   </span>
-                  <h3 className="font-serif text-xl font-normal">
+                  <h3 className="font-serif text-lg sm:text-xl font-normal">
                     {item.name}
                   </h3>
                 </div>
@@ -423,14 +418,14 @@ export default function QuietLuxuryHomePage() {
       </section>
 
       {/* 4. SIGNATURE JOURNEYS */}
-      <section id="journeys" className="py-24 bg-[#EFEBE4] px-6 sm:px-12 w-full">
-        <div className="max-w-7xl mx-auto space-y-14">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 border-b border-[rgba(36,35,33,0.08)] pb-8">
+      <section id="journeys" className="py-16 sm:py-24 bg-[#EFEBE4] px-4 sm:px-8 lg:px-12 w-full">
+        <div className="max-w-7xl mx-auto space-y-10 sm:space-y-14">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 border-b border-[rgba(36,35,33,0.08)] pb-6 sm:pb-8">
             <div className="space-y-2">
-              <span className="text-[11px] uppercase tracking-[0.3em] text-[#8C877D] font-sans block">
+              <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-[#8C877D] font-sans block">
                 Thoughtfully Planned
               </span>
-              <h2 className="font-serif text-3xl sm:text-5xl text-[#151412] font-normal tracking-tight">
+              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[#151412] font-normal tracking-tight">
                 Signature Journeys
               </h2>
             </div>
@@ -439,18 +434,19 @@ export default function QuietLuxuryHomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {SIGNATURE_JOURNEYS.map((journey) => (
               <Link
                 key={journey.title}
                 href={`/chat?prompt=${encodeURIComponent(journey.prompt)}`}
-                className="group block space-y-4"
+                className="group block space-y-3 sm:space-y-4"
               >
-                <div className="editorial-image-container relative h-[420px] w-full">
+                <div className="editorial-image-container relative h-[280px] sm:h-[340px] lg:h-[420px] w-full">
                   <Image
                     src={journey.image}
                     alt={journey.title}
                     fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-cover"
                   />
                   <div className="absolute inset-0 bg-black/15 group-hover:bg-black/5 transition-colors" />
@@ -462,11 +458,11 @@ export default function QuietLuxuryHomePage() {
                     <span className="font-medium text-[#151412]">{journey.price}</span>
                   </div>
 
-                  <h3 className="font-serif text-2xl text-[#151412] group-hover:text-[#C6A878] transition-colors">
+                  <h3 className="font-serif text-xl sm:text-2xl text-[#151412] group-hover:text-[#C6A878] transition-colors">
                     {journey.title}
                   </h3>
 
-                  <div className="pt-2 flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-[#242321] opacity-70 group-hover:opacity-100 transition-opacity">
+                  <div className="pt-1.5 sm:pt-2 flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-[#242321] opacity-70 group-hover:opacity-100 transition-opacity">
                     <span>Explore Itinerary</span>
                     <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
                   </div>
@@ -478,33 +474,34 @@ export default function QuietLuxuryHomePage() {
       </section>
 
       {/* 5. LUXURY EXPERIENCES */}
-      <section id="experiences" className="py-28 px-6 sm:px-12 max-w-7xl mx-auto w-full space-y-16">
-        <div className="text-center max-w-xl mx-auto space-y-3">
-          <span className="text-[11px] uppercase tracking-[0.3em] text-[#8C877D] font-sans block">
+      <section id="experiences" className="py-16 sm:py-24 lg:py-28 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full space-y-12 sm:space-y-16">
+        <div className="text-center max-w-xl mx-auto space-y-2 sm:space-y-3">
+          <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-[#8C877D] font-sans block">
             Bespoke Inclusions
           </span>
-          <h2 className="font-serif text-3xl sm:text-5xl text-[#151412] font-normal tracking-tight">
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[#151412] font-normal tracking-tight">
             Luxury Experiences
           </h2>
-          <p className="text-sm text-[#8C877D] font-light">
+          <p className="text-xs sm:text-sm text-[#8C877D] font-light">
             Moments that cannot be reserved on booking engines.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
           {EXPERIENCES.map((exp) => (
             <div key={exp.title} className="space-y-3 group">
-              <div className="editorial-image-container relative h-[360px] w-full">
+              <div className="editorial-image-container relative h-[260px] sm:h-[300px] lg:h-[360px] w-full">
                 <Image
                   src={exp.image}
                   alt={exp.title}
                   fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   className="object-cover"
                 />
                 <div className="absolute inset-0 bg-black/20" />
               </div>
               <div className="space-y-1 pt-1">
-                <h3 className="font-serif text-xl text-[#151412] font-normal">
+                <h3 className="font-serif text-lg sm:text-xl text-[#151412] font-normal">
                   {exp.title}
                 </h3>
                 <p className="text-xs text-[#8C877D] font-light">
@@ -517,23 +514,23 @@ export default function QuietLuxuryHomePage() {
       </section>
 
       {/* 6. THE CONCIERGE (TRAVEL SPECIALIST SECTION) */}
-      <section id="concierge" className="py-24 bg-[#FAF8F4] border-y border-[rgba(36,35,33,0.08)] px-6 sm:px-12 w-full">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-          <div className="lg:col-span-7 space-y-6">
-            <span className="text-[11px] uppercase tracking-[0.3em] text-[#8C877D] font-sans block">
+      <section id="concierge" className="py-16 sm:py-24 bg-[#FAF8F4] border-y border-[rgba(36,35,33,0.08)] px-4 sm:px-8 lg:px-12 w-full">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+          <div className="lg:col-span-7 space-y-5 sm:space-y-6">
+            <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-[#8C877D] font-sans block">
               Private Travel Advisory
             </span>
-            <h2 className="font-serif text-4xl sm:text-6xl text-[#151412] font-normal tracking-tight leading-[1.1]">
+            <h2 className="font-serif text-3xl sm:text-5xl lg:text-6xl text-[#151412] font-normal tracking-tight leading-[1.1]">
               Travel should feel effortless.
             </h2>
-            <p className="text-sm sm:text-base text-[#524F4A] font-light leading-relaxed max-w-xl">
+            <p className="text-xs sm:text-base text-[#524F4A] font-light leading-relaxed max-w-xl">
               From the first spark of inspiration to the final flight home, our travel specialists coordinate air transit routes, negotiate suite privileges, and handcraft daily itineraries tailored precisely to how you like to move.
             </p>
 
             <div className="pt-2">
               <Link
                 href="/chat"
-                className="btn-primary inline-flex items-center gap-3 px-8 py-3.5 text-xs uppercase tracking-[0.18em]"
+                className="btn-primary inline-flex items-center justify-center gap-3 px-7 sm:px-8 py-3.5 text-xs uppercase tracking-[0.18em] w-full sm:w-auto text-center"
               >
                 <span>Speak with a travel specialist</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -542,11 +539,12 @@ export default function QuietLuxuryHomePage() {
           </div>
 
           <div className="lg:col-span-5">
-            <div className="editorial-image-container relative h-[460px] w-full shadow-2xl">
+            <div className="editorial-image-container relative h-[280px] sm:h-[380px] lg:h-[460px] w-full shadow-2xl">
               <Image
                 src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1600&auto=format&fit=crop"
                 alt="Luxury Concierge Service"
                 fill
+                sizes="(max-width: 1024px) 100vw, 40vw"
                 className="object-cover"
               />
             </div>
@@ -555,22 +553,22 @@ export default function QuietLuxuryHomePage() {
       </section>
 
       {/* 7. AI DIGITAL TRAVEL CONCIERGE PREVIEW */}
-      <section id="inquire" className="py-28 px-6 sm:px-12 max-w-4xl mx-auto w-full text-center space-y-10">
-        <div className="space-y-4">
-          <span className="text-[11px] uppercase tracking-[0.3em] text-[#8C877D] font-sans block">
+      <section id="inquire" className="py-16 sm:py-24 lg:py-28 px-4 sm:px-8 lg:px-12 max-w-4xl mx-auto w-full text-center space-y-8 sm:space-y-10">
+        <div className="space-y-3 sm:space-y-4">
+          <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-[#8C877D] font-sans block">
             Digital Travel Atelier
           </span>
-          <h2 className="font-serif text-4xl sm:text-6xl text-[#151412] font-normal tracking-tight">
+          <h2 className="font-serif text-3xl sm:text-5xl lg:text-6xl text-[#151412] font-normal tracking-tight">
             Where will we take you?
           </h2>
-          <p className="text-sm text-[#8C877D] font-light max-w-md mx-auto">
+          <p className="text-xs sm:text-sm text-[#8C877D] font-light max-w-md mx-auto">
             Tell our multi-agent scouts what your perfect journey looks like, and receive a refined day-by-day travel journal in moments.
           </p>
         </div>
 
         {/* Input area */}
         <div className="max-w-2xl mx-auto space-y-4">
-          <div className="bg-[#FAF8F4] border border-[rgba(36,35,33,0.12)] p-2 sm:p-2.5 flex items-center gap-3">
+          <div className="bg-[#FAF8F4] border border-[rgba(36,35,33,0.12)] p-2 sm:p-2.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             <input
               type="text"
               placeholder="Tell us what your perfect journey looks like..."
@@ -579,11 +577,11 @@ export default function QuietLuxuryHomePage() {
                   router.push(`/chat?prompt=${encodeURIComponent((e.target as HTMLInputElement).value)}`);
                 }
               }}
-              className="flex-1 bg-transparent px-4 py-3 text-sm sm:text-base text-[#151412] placeholder:text-[#8C877D]/70 focus:outline-none font-serif"
+              className="flex-1 bg-transparent px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-[#151412] placeholder:text-[#8C877D]/70 focus:outline-none font-serif"
             />
             <Link
               href="/chat"
-              className="btn-primary px-6 py-3 text-xs uppercase tracking-[0.18em] font-sans shrink-0 flex items-center gap-1.5"
+              className="btn-primary px-6 py-3 text-xs uppercase tracking-[0.18em] font-sans shrink-0 flex items-center justify-center gap-1.5 w-full sm:w-auto"
             >
               <span>Compose</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -591,12 +589,12 @@ export default function QuietLuxuryHomePage() {
           </div>
 
           {/* Quick Style Chips */}
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 pt-2">
             {PLANNER_STYLES.map((pill) => (
               <Link
                 key={pill}
                 href={`/chat?prompt=${encodeURIComponent(`Plan a ${pill.toLowerCase()} for 2 travelers`)}`}
-                className="text-xs px-3.5 py-1.5 border border-[rgba(36,35,33,0.12)] text-[#524F4A] hover:text-[#151412] hover:border-[#151412] transition-colors"
+                className="text-xs px-3 sm:px-3.5 py-1.5 border border-[rgba(36,35,33,0.12)] text-[#524F4A] hover:text-[#151412] hover:border-[#151412] transition-colors"
               >
                 {pill}
               </Link>
@@ -606,8 +604,8 @@ export default function QuietLuxuryHomePage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-[rgba(36,35,33,0.08)] py-14 px-6 sm:px-12 bg-[#FAF8F4] w-full text-xs text-[#8C877D]">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+      <footer className="border-t border-[rgba(36,35,33,0.08)] py-10 sm:py-14 px-4 sm:px-8 lg:px-12 bg-[#FAF8F4] w-full text-xs text-[#8C877D]">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6 sm:gap-8">
           <div className="space-y-1">
             <div className="font-serif tracking-[0.25em] text-sm text-[#151412] uppercase">
               É T A P E
@@ -617,7 +615,7 @@ export default function QuietLuxuryHomePage() {
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-8 tracking-[0.15em] uppercase text-[10px]">
+          <div className="flex flex-wrap gap-x-6 gap-y-2 sm:gap-8 tracking-[0.15em] uppercase text-[10px]">
             <a href="#destinations" className="hover:text-[#151412] transition">
               Destinations
             </a>
