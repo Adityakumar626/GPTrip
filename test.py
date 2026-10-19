@@ -1,13 +1,6 @@
-from gptrip.tools.tavily_tool import tavily_search
-from gptrip.tools.flight_tool import search_flights
-from gptrip.backend import run_travel_agent
+import asyncio
+from mcp_client_test import tavily_mcp_search
 
-# res = tavily_search("best hotels in india")
-# print(res)
-# res2 = search_flights("flights from Delhi to Mumbai")
-# print(res2)
-
-res3 = run_travel_agent("I want to go to Bali from Dhaka for 5 days ")
-print(res3)
-
-
+if __name__ == "__main__":
+    query = "what is president of india?"
+    asyncio.run(tavily_mcp_search(query))
