@@ -13,6 +13,7 @@ import {
   Search,
   Plane,
   Building,
+  FileDown,
 } from "lucide-react";
 
 interface TravelResponse {
@@ -303,11 +304,15 @@ function ConciergeChatContent() {
   const parsedFlights = data ? parseDynamicFlights(data.flight_results) : [];
   const parsedHotels = data ? parseDynamicHotels(data.hotel_results) : [];
 
+  const handleDownloadPDF = () => {
+    if (!data) return;
+    window.print();
+  };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 sm:px-8 lg:px-10 pt-24 sm:pt-32 pb-16 sm:pb-20 overflow-x-hidden">
+    <div className="w-full max-w-4xl mx-auto px-4 sm:px-8 lg:px-10 pt-24 sm:pt-32 pb-16 sm:pb-20 overflow-x-hidden print:pt-4 print:pb-4 print:px-0 print:max-w-none">
       {/* Specialist Identity Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 sm:pb-8 mb-8 sm:mb-10 border-b border-[#D2CABC]/70">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 sm:pb-8 mb-8 sm:mb-10 border-b border-[#D2CABC]/70 print:hidden">
         <div className="flex items-center gap-3.5 sm:gap-4">
           <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden border border-[#C6A878] shadow-sm shrink-0">
             <Image
@@ -332,19 +337,41 @@ function ConciergeChatContent() {
           </div>
         </div>
 
-        {data && (
-          <button
-            onClick={() => {
-              setData(null);
-              setThreadId(null);
-              setUserQuery("");
-              setHasConversationStarted(false);
-            }}
-            className="self-end sm:self-auto text-xs uppercase tracking-[0.2em] text-[#6E685E] hover:text-[#11100F] transition-colors cursor-pointer font-sans font-semibold py-1"
-          >
-            New Inquiry
-          </button>
-        )}
+        <div className="flex items-center gap-3 self-end sm:self-auto print:hidden">
+          {data ? (
+            <>
+              <button
+                type="button"
+                onClick={handleDownloadPDF}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1F1E1C] hover:bg-[#0A0A09] text-[#FAF8F4] text-xs uppercase tracking-[0.18em] font-sans font-semibold rounded-sm transition-all shadow-sm cursor-pointer border border-[#8A6D38]/40"
+                title="Download complete dossier as PDF"
+              >
+                <FileDown className="w-3.5 h-3.5 text-[#C6A878]" />
+                <span>Download PDF</span>
+              </button>
+              <button
+                onClick={() => {
+                  setData(null);
+                  setThreadId(null);
+                  setUserQuery("");
+                  setHasConversationStarted(false);
+                }}
+                className="text-xs uppercase tracking-[0.2em] text-[#6E685E] hover:text-[#11100F] transition-colors cursor-pointer font-sans font-semibold py-1"
+              >
+                New Inquiry
+              </button>
+            </>
+          ) : (
+            <button
+              disabled
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#D2CABC]/60 bg-[#FAF8F4] text-[#8C877D] text-xs uppercase tracking-[0.18em] font-sans font-medium rounded-sm cursor-not-allowed opacity-75"
+              title="Download PDF will be enabled once Sofia Laurent generates your itinerary"
+            >
+              <FileDown className="w-3.5 h-3.5 text-[#A59D90]" />
+              <span>Download PDF</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ========================================================= */}
@@ -446,14 +473,45 @@ function ConciergeChatContent() {
         {/* STATE B: ACTIVE CONVERSATION (PURELY DYNAMIC) */}
         {(hasConversationStarted || data) && (
           <div className="space-y-12 sm:space-y-16">
+            {/* Print-Only Dossier Header */}
+            <div className="hidden print:block mb-8 pb-6 border-b-2 border-[#11100F]">
+              <div className="flex items-center justify-between pb-3">
+                <div>
+                  <h1 className="font-serif text-3xl font-medium tracking-wide text-[#11100F]">
+                    É T A P E
+                  </h1>
+                  <p className="text-[11px] uppercase tracking-[0.28em] text-[#8A6D38] font-sans font-bold pt-1">
+                    Private Travel Atelier &middot; Bespoke Voyage Dossier
+                  </p>
+                </div>
+                <div className="text-right text-xs text-[#555047] font-sans">
+                  <p className="font-medium text-[#11100F]">Private Specialist: Sofia Laurent</p>
+                  <p className="pt-0.5">{new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
+                </div>
+              </div>
+            </div>
+
             {/* Conversation Header */}
-            <div className="space-y-1 pb-4 border-b border-[#D2CABC]/70">
-              <span className="text-[10px] uppercase tracking-[0.3em] text-[#8A6D38] font-bold block font-sans">
-                Your Private Concierge
-              </span>
-              <h1 className="font-serif text-2xl sm:text-4xl text-[#11100F] font-normal">
-                Voyage Consultation
-              </h1>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#D2CABC]/70">
+              <div className="space-y-1">
+                <span className="text-[10px] uppercase tracking-[0.3em] text-[#8A6D38] font-bold block font-sans">
+                  Your Private Concierge
+                </span>
+                <h1 className="font-serif text-2xl sm:text-4xl text-[#11100F] font-normal">
+                  Voyage Consultation
+                </h1>
+              </div>
+              {data && !loading && (
+                <button
+                  type="button"
+                  onClick={handleDownloadPDF}
+                  className="no-print print:hidden self-start sm:self-auto inline-flex items-center gap-2 px-4 py-2 bg-[#1F1E1C] hover:bg-[#0A0A09] text-[#FAF8F4] text-xs uppercase tracking-[0.18em] font-sans font-semibold rounded-sm transition-all shadow-sm cursor-pointer border border-[#8A6D38]/30 group"
+                  title="Download all voyage details as a PDF"
+                >
+                  <FileDown className="w-4 h-4 text-[#C6A878] group-hover:scale-110 transition-transform" />
+                  <span>Download PDF Dossier</span>
+                </button>
+              )}
             </div>
 
             {/* CLIENT INQUIRY BLOCK */}
@@ -506,7 +564,7 @@ function ConciergeChatContent() {
                       {parsedFlights.map((flight, idx) => (
                         <div
                           key={idx}
-                          className="border border-[#C8C0B0] bg-[#FFFFFF] p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-4 hover:border-[#11100F] transition-colors"
+                          className="border border-[#C8C0B0] bg-[#FFFFFF] p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-4 hover:border-[#11100F] transition-colors break-inside-avoid print:shadow-none print:border-neutral-300"
                         >
                           <div className="flex items-center justify-between gap-2 text-xs border-b border-[#D2CABC]/60 pb-3">
                             <div className="flex items-center gap-2">
@@ -590,7 +648,7 @@ function ConciergeChatContent() {
                       {parsedHotels.map((hotel, idx) => (
                         <div
                           key={idx}
-                          className="border border-[#C8C0B0] bg-[#FFFFFF] p-3.5 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 hover:border-[#11100F] transition-colors group cursor-pointer"
+                          className="border border-[#C8C0B0] bg-[#FFFFFF] p-3.5 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 hover:border-[#11100F] transition-colors group cursor-pointer break-inside-avoid print:shadow-none print:border-neutral-300"
                           onClick={() =>
                             executeInquiry(`Tell me more about staying at ${hotel.name}`)
                           }
@@ -650,7 +708,7 @@ function ConciergeChatContent() {
             )}
 
             {/* SUGGESTED PROMPTS */}
-            <div className="space-y-4 pt-6 border-t border-[#D2CABC]/70">
+            <div className="space-y-4 pt-6 border-t border-[#D2CABC]/70 print:hidden no-print">
               <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.25em] text-[#8A6D38] font-sans font-bold block">
                 Perhaps you&apos;d like to ask...
               </span>
@@ -673,7 +731,7 @@ function ConciergeChatContent() {
             </div>
 
             {/* COMPOSER: Premium Paper-like Input Area */}
-            <div className="pt-4 sm:pt-6 sticky bottom-2 sm:bottom-6 bg-[#F7F4EE]/95 backdrop-blur-md pb-2 z-20">
+            <div className="pt-4 sm:pt-6 sticky bottom-2 sm:bottom-6 bg-[#F7F4EE]/95 backdrop-blur-md pb-2 z-20 print:hidden no-print">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -747,7 +805,7 @@ export default function ChatConciergePage() {
         <ConciergeChatContent />
       </Suspense>
 
-      <footer className="border-t border-[#D2CABC]/80 py-8 sm:py-10 px-4 sm:px-8 lg:px-12 text-xs text-[#6A655C] bg-[#FAF8F4]">
+      <footer className="border-t border-[#D2CABC]/80 py-8 sm:py-10 px-4 sm:px-8 lg:px-12 text-xs text-[#6A655C] bg-[#FAF8F4] print:hidden no-print">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-center sm:text-left">
           <span className="font-serif tracking-[0.3em] uppercase text-sm text-[#11100F] font-medium">
             É T A P E

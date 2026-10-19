@@ -39,7 +39,7 @@ export default function LuxuryHeader() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 print:hidden ${
         scrolled || isChat || mobileMenuOpen
           ? "bg-[#F7F4EE]/95 backdrop-blur-md border-b border-[rgba(36,35,33,0.08)] py-3 sm:py-4 text-[#242321]"
           : "bg-gradient-to-b from-black/60 via-black/25 to-transparent py-4 sm:py-6 text-white"
