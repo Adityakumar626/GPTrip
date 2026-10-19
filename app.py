@@ -8,6 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from gptrip.backend import run_travel_agent
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 
 app = FastAPI(
     title="GPTrip",
