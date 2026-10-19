@@ -337,41 +337,19 @@ function ConciergeChatContent() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 self-end sm:self-auto print:hidden">
-          {data ? (
-            <>
-              <button
-                type="button"
-                onClick={handleDownloadPDF}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1F1E1C] hover:bg-[#0A0A09] text-[#FAF8F4] text-xs uppercase tracking-[0.18em] font-sans font-semibold rounded-sm transition-all shadow-sm cursor-pointer border border-[#8A6D38]/40"
-                title="Download complete dossier as PDF"
-              >
-                <FileDown className="w-3.5 h-3.5 text-[#C6A878]" />
-                <span>Download PDF</span>
-              </button>
-              <button
-                onClick={() => {
-                  setData(null);
-                  setThreadId(null);
-                  setUserQuery("");
-                  setHasConversationStarted(false);
-                }}
-                className="text-xs uppercase tracking-[0.2em] text-[#6E685E] hover:text-[#11100F] transition-colors cursor-pointer font-sans font-semibold py-1"
-              >
-                New Inquiry
-              </button>
-            </>
-          ) : (
-            <button
-              disabled
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#D2CABC]/60 bg-[#FAF8F4] text-[#8C877D] text-xs uppercase tracking-[0.18em] font-sans font-medium rounded-sm cursor-not-allowed opacity-75"
-              title="Download PDF will be enabled once Sofia Laurent generates your itinerary"
-            >
-              <FileDown className="w-3.5 h-3.5 text-[#A59D90]" />
-              <span>Download PDF</span>
-            </button>
-          )}
-        </div>
+        {data && (
+          <button
+            onClick={() => {
+              setData(null);
+              setThreadId(null);
+              setUserQuery("");
+              setHasConversationStarted(false);
+            }}
+            className="self-end sm:self-auto text-xs uppercase tracking-[0.2em] text-[#6E685E] hover:text-[#11100F] transition-colors cursor-pointer font-sans font-semibold py-1 print:hidden"
+          >
+            New Inquiry
+          </button>
+        )}
       </div>
 
       {/* ========================================================= */}
@@ -703,6 +681,16 @@ function ConciergeChatContent() {
                       {stripFlightsAndHotels(data.answer)}
                     </ReactMarkdown>
                   </article>
+
+                  {/* PRINT-ONLY DOSSIER FOOTER */}
+                  <div className="hidden print:block mt-16 pt-8 border-t border-[#11100F]/20 text-center space-y-1">
+                    <p className="font-serif tracking-[0.28em] uppercase text-xs text-[#11100F] font-medium">
+                      É T A P E &middot; ATELIER
+                    </p>
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-[#8A6D38] font-sans">
+                      Private Travel Concierge &middot; Confidential Client Consultation Dossier
+                    </p>
+                  </div>
                 </div>
               </>
             )}

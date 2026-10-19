@@ -296,11 +296,14 @@ article hr {
 /* ========================================================= */
 @media print {
   @page {
-    margin: 1.6cm 1.4cm;
+    margin: 0;
     size: auto;
   }
 
+  html,
   body {
+    margin: 0 !important;
+    padding: 1.5cm 1.4cm !important;
     background-color: #ffffff !important;
     color: #11100f !important;
     font-size: 11pt !important;
