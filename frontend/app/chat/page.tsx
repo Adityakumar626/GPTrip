@@ -14,6 +14,12 @@ import {
   Plane,
   Building,
   FileDown,
+  CloudSun,
+  Thermometer,
+  Wind,
+  Droplets,
+  Sun,
+  CloudRain,
 } from "lucide-react";
 
 interface TravelResponse {
@@ -22,9 +28,28 @@ interface TravelResponse {
   answer: string;
   flight_results: string;
   hotel_results: string;
+  weather_results?: string;
   itinerary: string;
   llm_calls: number;
   error?: string;
+}
+
+interface ForecastItem {
+  datetime: string;
+  timeFormatted: string;
+  dateFormatted: string;
+  temperature: number;
+  weather: string;
+}
+
+interface ParsedWeather {
+  city: string;
+  temperature: number;
+  feelsLike: number;
+  description: string;
+  humidity: number;
+  windSpeed: number;
+  forecast: ForecastItem[];
 }
 
 interface ParsedFlight {
@@ -207,7 +232,89 @@ function parseDynamicHotels(raw: string): ParsedHotel[] {
   return hotels.slice(0, 3);
 }
 
-// Strips out raw flight and hotel text blocks so markdown is purely a clean narrative itinerary
+function getWeatherIcon(condition: string) {
+  const c = condition.toLowerCase();
+  if (c.includes("rain") || c.includes("drizzle") || c.includes("shower") || c.includes("storm")) {
+    return <CloudRain className="w-4 h-4 text-[#8A6D38]" />;
+  }
+  if (c.includes("clear") || c.includes("sun")) {
+    return <Sun className="w-4 h-4 text-[#8A6D38]" />;
+  }
+  return <CloudSun className="w-4 h-4 text-[#8A6D38]" />;
+}
+
+// Parses real OpenWeather FastMCP results dynamically
+function parseDynamicWeather(raw?: string): ParsedWeather | null {
+  if (!raw || typeof raw !== "string") return null;
+
+  try {
+    const cleaned = raw.replace(/\\n/g, "\n").replace(/\\"/g, '"');
+    const currentSection = cleaned.split(/Forecast:/i)[0] || cleaned;
+    const forecastSection = cleaned.split(/Forecast:/i)[1] || "";
+
+    const cityMatch =
+      currentSection.match(/"city":\s*"([^"]+)"/i) ||
+      cleaned.match(/"city":\s*"([^"]+)"/i);
+    const tempMatch =
+      currentSection.match(/"temperature_c":\s*([0-9.-]+)/i) ||
+      currentSection.match(/"temp":\s*([0-9.-]+)/i);
+    const feelsMatch =
+      currentSection.match(/"feels_like_c":\s*([0-9.-]+)/i) ||
+      currentSection.match(/"feels_like":\s*([0-9.-]+)/i);
+    const descMatch =
+      currentSection.match(/"description":\s*"([^"]+)"/i) ||
+      currentSection.match(/"weather":\s*"([^"]+)"/i);
+    const humidityMatch = currentSection.match(/"humidity":\s*([0-9.]+)/i);
+    const windMatch = currentSection.match(/"wind_speed":\s*([0-9.]+)/i);
+
+    if (!tempMatch && !cityMatch) return null;
+
+    const forecast: ForecastItem[] = [];
+    const itemRegex =
+      /\{\s*"datetime":\s*"([^"]+)",\s*"temperature":\s*([0-9.-]+),\s*"weather":\s*"([^"]+)"\s*\}/g;
+    let match;
+    while ((match = itemRegex.exec(forecastSection)) !== null) {
+      const dtStr = match[1];
+      const tempVal = Math.round(parseFloat(match[2]));
+      const cond = match[3];
+
+      let timeFormatted = dtStr;
+      let dateFormatted = "";
+      try {
+        const d = new Date(dtStr.replace(" ", "T"));
+        if (!isNaN(d.getTime())) {
+          timeFormatted = d.toLocaleTimeString([], { hour: "numeric", hour12: true });
+          dateFormatted = d.toLocaleDateString([], { weekday: "short" });
+        }
+      } catch {
+        // fallback
+      }
+
+      forecast.push({
+        datetime: dtStr,
+        timeFormatted,
+        dateFormatted,
+        temperature: tempVal,
+        weather: cond,
+      });
+    }
+
+    return {
+      city: cityMatch ? cityMatch[1] : "Destination",
+      temperature: tempMatch ? Math.round(parseFloat(tempMatch[1])) : 20,
+      feelsLike: feelsMatch ? Math.round(parseFloat(feelsMatch[1])) : 20,
+      description: descMatch ? descMatch[1] : "Fair conditions",
+      humidity: humidityMatch ? Math.round(parseFloat(humidityMatch[1])) : 65,
+      windSpeed: windMatch ? parseFloat(parseFloat(windMatch[1]).toFixed(1)) : 2.5,
+      forecast: forecast.slice(0, 5),
+    };
+  } catch (err) {
+    console.error("Error parsing weather results:", err);
+    return null;
+  }
+}
+
+// Strips out raw flight, hotel, and weather text blocks so markdown is purely a clean narrative itinerary
 function stripFlightsAndHotels(content: string): string {
   if (!content) return "";
 
@@ -226,7 +333,13 @@ function stripFlightsAndHotels(content: string): string {
       firstLine.includes("curated stays") ||
       firstLine.includes("accommodation") ||
       firstLine.includes("sanctuaries");
-    return !isFlight && !isHotel;
+    const isWeather =
+      firstLine.includes("weather") ||
+      firstLine.includes("climate") ||
+      firstLine.includes("forecast") ||
+      firstLine.includes("meteorological") ||
+      firstLine.includes("atmospheric");
+    return !isFlight && !isHotel && !isWeather;
   });
 
   return filtered.join("").trim();
@@ -303,6 +416,7 @@ function ConciergeChatContent() {
 
   const parsedFlights = data ? parseDynamicFlights(data.flight_results) : [];
   const parsedHotels = data ? parseDynamicHotels(data.hotel_results) : [];
+  const parsedWeather = data ? parseDynamicWeather(data.weather_results) : null;
 
   const handleDownloadPDF = () => {
     if (!data) return;
@@ -665,7 +779,147 @@ function ConciergeChatContent() {
                   </div>
                 )}
 
-                {/* 3. DYNAMIC DAY-BY-DAY ITINERARY JOURNAL (MARKDOWN) */}
+                {/* 3. DYNAMIC ATMOSPHERIC RADAR (WEATHER UI) */}
+                {parsedWeather && (
+                  <div className="space-y-5 sm:space-y-6 pt-6 border-t border-[#D2CABC]/70">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2">
+                      <div className="space-y-0.5 sm:space-y-1">
+                        <span className="text-[10px] uppercase tracking-[0.28em] text-[#8A6D38] font-sans font-bold block">
+                          Atmospheric Radar
+                        </span>
+                        <h3 className="font-serif text-2xl sm:text-3xl text-[#11100F] font-normal">
+                          Destination Climate &amp; Outlook
+                        </h3>
+                      </div>
+                      <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs uppercase tracking-[0.16em] sm:tracking-[0.18em] text-[#6E685E]">
+                        <CloudSun className="w-3.5 h-3.5 text-[#8A6D38]" />
+                        <span>OpenWeather Atmospheric Radar</span>
+                      </div>
+                    </div>
+
+                    <div className="border border-[#C8C0B0] bg-[#FFFFFF] p-4 sm:p-6 shadow-sm space-y-5 hover:border-[#11100F] transition-colors break-inside-avoid print:shadow-none print:border-neutral-300">
+                      {/* Top Bar: Destination, condition badge & temperature */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#D2CABC]/60 pb-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.25em] text-[#8A6D38] font-bold font-sans">
+                              Live Climate
+                            </span>
+                            <span className="text-[#D2CABC]">&bull;</span>
+                            <span className="font-serif font-medium text-[#11100F] text-base sm:text-lg">
+                              {parsedWeather.city}
+                            </span>
+                          </div>
+                          <div className="text-xs text-[#555047] capitalize flex items-center gap-1.5">
+                            {getWeatherIcon(parsedWeather.description)}
+                            <span>{parsedWeather.description}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-baseline gap-2 sm:text-right">
+                          <span className="font-serif text-3xl sm:text-4xl text-[#11100F] font-light tracking-tight">
+                            {parsedWeather.temperature}&deg;C
+                          </span>
+                          <span className="text-xs uppercase tracking-[0.15em] text-[#8A6D38] font-sans font-medium">
+                            Feels {parsedWeather.feelsLike}&deg;C
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Climate Indices Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+                        <div className="bg-[#FAF8F4] border border-[#D2CABC]/50 p-3 space-y-1">
+                          <span className="text-[9px] uppercase tracking-[0.2em] text-[#7A7468] font-sans flex items-center gap-1">
+                            <Thermometer className="w-3 h-3 text-[#8A6D38]" />
+                            Thermal Index
+                          </span>
+                          <p className="font-serif text-base text-[#11100F]">
+                            {parsedWeather.temperature}&deg;C{" "}
+                            <span className="text-xs text-[#7A7468]">
+                              ({parsedWeather.feelsLike}&deg;C)
+                            </span>
+                          </p>
+                        </div>
+
+                        <div className="bg-[#FAF8F4] border border-[#D2CABC]/50 p-3 space-y-1">
+                          <span className="text-[9px] uppercase tracking-[0.2em] text-[#7A7468] font-sans flex items-center gap-1">
+                            <Droplets className="w-3 h-3 text-[#8A6D38]" />
+                            Humidity
+                          </span>
+                          <p className="font-serif text-base text-[#11100F]">
+                            {parsedWeather.humidity}%{" "}
+                            <span className="text-xs text-[#7A7468]">RH</span>
+                          </p>
+                        </div>
+
+                        <div className="bg-[#FAF8F4] border border-[#D2CABC]/50 p-3 space-y-1">
+                          <span className="text-[9px] uppercase tracking-[0.2em] text-[#7A7468] font-sans flex items-center gap-1">
+                            <Wind className="w-3 h-3 text-[#8A6D38]" />
+                            Wind Speed
+                          </span>
+                          <p className="font-serif text-base text-[#11100F]">
+                            {parsedWeather.windSpeed}{" "}
+                            <span className="text-xs text-[#7A7468]">m/s</span>
+                          </p>
+                        </div>
+
+                        <div className="bg-[#FAF8F4] border border-[#D2CABC]/50 p-3 space-y-1">
+                          <span className="text-[9px] uppercase tracking-[0.2em] text-[#8A6D38] font-sans flex items-center gap-1">
+                            <CloudSun className="w-3 h-3 text-[#8A6D38]" />
+                            Atmosphere
+                          </span>
+                          <p
+                            className="font-serif text-base text-[#11100F] capitalize truncate"
+                            title={parsedWeather.description}
+                          >
+                            {parsedWeather.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* 24-Hour Micro-Climate Outlook (Forecast) */}
+                      {parsedWeather.forecast.length > 0 && (
+                        <div className="border-t border-[#D2CABC]/60 pt-4 space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.22em] text-[#8A6D38] font-bold font-sans">
+                              Upcoming Micro-Climate Forecast
+                            </span>
+                            <span className="text-[9px] uppercase tracking-[0.18em] text-[#7A7468] font-sans">
+                              5-Step Timeline
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                            {parsedWeather.forecast.map((step, sIdx) => (
+                              <div
+                                key={sIdx}
+                                className="bg-[#FAF8F4] border border-[#D2CABC]/60 p-2.5 text-center space-y-1 hover:border-[#11100F] transition-colors"
+                              >
+                                <span className="text-[10px] uppercase tracking-wider text-[#7A7468] font-sans block">
+                                  {step.timeFormatted}
+                                </span>
+                                <div className="flex justify-center py-0.5">
+                                  {getWeatherIcon(step.weather)}
+                                </div>
+                                <span className="font-serif text-sm font-medium text-[#11100F] block">
+                                  {step.temperature}&deg;C
+                                </span>
+                                <span
+                                  className="text-[9px] text-[#6E685E] capitalize block truncate"
+                                  title={step.weather}
+                                >
+                                  {step.weather}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. DYNAMIC DAY-BY-DAY ITINERARY JOURNAL (MARKDOWN) */}
                 <div className="space-y-6 sm:space-y-8 pt-6 border-t border-[#D2CABC]/70">
                   <div className="space-y-1">
                     <span className="text-[10px] uppercase tracking-[0.28em] text-[#8A6D38] font-sans font-bold block">
