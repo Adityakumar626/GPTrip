@@ -310,7 +310,7 @@ function ConciergeChatContent() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 sm:px-8 lg:px-10 pt-24 sm:pt-32 pb-16 sm:pb-20 overflow-x-hidden print:pt-4 print:pb-4 print:px-0 print:max-w-none">
+    <div className="w-full max-w-4xl mx-auto px-4 sm:px-8 lg:px-10 pt-24 sm:pt-32 pb-16 sm:pb-20 overflow-x-hidden print:p-0 print:m-0 print:w-full print:max-w-none print:overflow-visible">
       {/* Specialist Identity Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 sm:pb-8 mb-8 sm:mb-10 border-b border-[#D2CABC]/70 print:hidden">
         <div className="flex items-center gap-3.5 sm:gap-4">
@@ -355,7 +355,7 @@ function ConciergeChatContent() {
       {/* ========================================================= */}
       {/* MAIN CONCIERGE CONVERSATION                               */}
       {/* ========================================================= */}
-      <main className="space-y-12 sm:space-y-16 min-h-[65vh]">
+      <main className="space-y-12 sm:space-y-16 min-h-[65vh] print:space-y-3 print:min-h-0 print:p-0 print:m-0">
         {/* STATE A: EMPTY STATE (Before conversation begins) */}
         {!hasConversationStarted && !data && (
           <div className="py-8 sm:py-16 space-y-8 sm:space-y-12 max-w-2xl mx-auto text-center">
@@ -450,9 +450,9 @@ function ConciergeChatContent() {
 
         {/* STATE B: ACTIVE CONVERSATION (PURELY DYNAMIC) */}
         {(hasConversationStarted || data) && (
-          <div className="space-y-12 sm:space-y-16">
+          <div className="space-y-12 sm:space-y-16 print:space-y-3 print:p-0 print:m-0">
             {/* Print-Only Dossier Header */}
-            <div className="hidden print:block mb-8 pb-6 border-b-2 border-[#11100F]">
+            <div className="hidden print:block mb-8 pb-6 border-b-2 border-[#11100F] print:mb-3 print:pb-2">
               <div className="flex items-center justify-between pb-3">
                 <div>
                   <h1 className="font-serif text-3xl font-medium tracking-wide text-[#11100F]">
@@ -683,7 +683,7 @@ function ConciergeChatContent() {
                   </article>
 
                   {/* PRINT-ONLY DOSSIER FOOTER */}
-                  <div className="hidden print:block mt-16 pt-8 border-t border-[#11100F]/20 text-center space-y-1">
+                  <div className="hidden print:block mt-16 pt-8 border-t border-[#11100F]/20 text-center space-y-1 print:mt-6 print:pt-3">
                     <p className="font-serif tracking-[0.28em] uppercase text-xs text-[#11100F] font-medium">
                       É T A P E &middot; ATELIER
                     </p>
@@ -780,7 +780,7 @@ function ConciergeChatContent() {
 
 export default function ChatConciergePage() {
   return (
-    <div className="min-h-screen bg-[#F7F4EE] text-[#11100F] flex flex-col selection:bg-[#E9E1D4] selection:text-[#11100F] overflow-x-hidden">
+    <div className="min-h-screen bg-[#F7F4EE] text-[#11100F] flex flex-col selection:bg-[#E9E1D4] selection:text-[#11100F] overflow-x-hidden print:min-h-0 print:bg-white print:p-0 print:m-0 print:block">
       <LuxuryHeader />
 
       <Suspense
